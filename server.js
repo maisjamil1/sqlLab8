@@ -3,11 +3,11 @@
 // TRAIL_API_KEY=200721508-7f6f7e38c77b1e414967a16beb2af253
 
 
-
+//مصيبة 1_____________________
 'use strict';
 require('dotenv').config();
 const express = require('express');
-const pg =require('pg');
+const pg = require('pg');
 // const cors = require('cors');_______
 
 const PORT = process.env.PORT || 4000;
@@ -16,20 +16,49 @@ const app = express();
 // app.use(cors());_____
 
 const client = new pg.Client(process.env.DATABASE_URL);
-client.on('error',(err) =>{
+client.on('error', (err) => {
   throw new Error(err);
 });
 client
-.connect()
-.then(() =>{
-  app.listen(PORT,() =>
-  console.log(`my server is running on port ${PORT}`)
+  .connect()
+  .then(() => {
+    app.listen(PORT, () =>
+      console.log(`my server is running on port ${PORT}`)
+
+    );
+  })
+  .catch((err) => {
+    throw new Error(`startup error ${err}`);
+  });
+
+//مصيبة 2_____________________
+
+app.get('/location',(req,res)=>{
+
+  let search_querysql = locationData.search_query
+  let formatted_querysql = locationData.latitude
+  let latitudesql = locationData.latitude
+  let longitudesql = locationData.longitude
+  const SQL='INSERT INFO locations(search_query,value) VALUES ($1,$2) RETURNING *'
+  const safeValue=['search_query',search_querysql];
+  client
+  .query(SQL,safeValue)
+  .then((results) => {
+    res.status(200).json(results.rows);
+  })
+
+
+  .catch((err) => {
+    res.status(500).send(err);
+  });
+
+
+   
+  });
   
-  );
-})
-.catch((err) =>{
-  throw new Error(`startup error ${err}`);
-});
+
+
+//مصيبة 2_____________________
 
 
 // app.get('/location', locationHandler);
@@ -46,10 +75,10 @@ client
 //   )
 //     .then((res) => {
 //       console.log('zzzz' , res);
-      
+
 //       const geoData = res.body;
 //       console.log("whats this ? :",geoData);
-      
+
 //       const locationData = new Location(city, geoData);
 //       response.status(200).json(locationData);
 //     })
@@ -79,18 +108,18 @@ client
 //       })
 //       .catch((errT)=> errorHandler(errT, request, response));
 //   }
-  
-  
+
+
 //   function Weather(day) {
 //     this.forecast = day.weather.description;
 //     this.time = new Date(day.valid_date).toString().slice(0, 15);
 //   }
 
 // //___________________________________________________
-  
+
 //     function trailhandler(request, response) {
 //     superagent(`https://www.hikingproject.com/data/get-trails?lat=${request.query.latitude}&lon=${request.query.longitude}&maxDistance=400&key=${process.env.TRAIL_API_KEY}`)
-    
+
 //     .then((trailRes) => {   
 //         console.log(trailRes.body);
 //         const trailsobj = trailRes.body.trails.map((trail$$)=> {
@@ -101,7 +130,7 @@ client
 
 //     })
 //     .catch((errT)=> errorHandler(errT, request, response));
-   
+
 //    };
 
 
@@ -116,7 +145,7 @@ client
 //     this.conditions= trail$$.conditions;
 //     this.conditions_date=trail$$.condition_date;
 //     this.conditions_time=trail$$.condtion_time
-   
+
 // }
 
 
