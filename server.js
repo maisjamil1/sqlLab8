@@ -13,9 +13,43 @@ const cors = require('cors');
  const superagent= require('superagent')
 const pg = require('pg');
 const client = new pg.Client(process.env.DATABASE_URL);
+
 app.use(cors());
 
 
+
+
+// app.use(errorHandler);
+app.get('/location', (request, response) => {
+  const city = request.query.city;
+  const SQL = 'SELECT * FROM location WHERE search_query =$1';
+  const values =[city];
+client
+.query(SQL,values)
+.then((result) => {
+  if (result.rows.length > 0) {
+    response.status(200).json(result.rows[0]);
+  }else {
+      superagent(`https://eu1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${city}&format=json`
+      ).then((result) => {
+        const geoData = res.body;
+        const locationData = new Location(city, geoData);
+        const SQL = 'INSERT INTO location (search_query,formatted_query,latitude,longitude)VALUES($1,$2,$3,$4) RETURNING *';
+const values =[
+locationData.search_query,
+locationData.formatted_query,
+locationData.latitude,
+locationData.longitude,
+];
+client.query(SQL,values).then((result)=>{
+console.log(result.rows);
+
+response.status(200).json(result.rows[0]);
+});
+});
+}
+})
+.catch((err)=>errorHandler(err,request,response));
 
 
 //مصيبة 2_____________________
@@ -45,18 +79,7 @@ app.use(cors());
 
 //مصيبة 2_____________________
 
-app.get('/location', (request, response) => {
-  const city = request.query.city;
-  const SQL = 'SELECT * FROM location WHERE search_query =$1';
-  const values =[city];
-client.query(SQL,values).then((result)=>{
-  response.status(200).json(result.rows);
-})
-.catch(()=>
-app.use((error,request,response)=>{
-  response.status(500).send(error);
-})
-);
+
 
 
 
@@ -149,23 +172,23 @@ function Location(city, geoData) {
   this.longitude = geoData[0].lon;
 }
 
-   function Weather(day) {
-     this.forecast = day.weather.description;
-     this.time = new Date(day.valid_date).toString().slice(0, 15);
-  }
+//    function Weather(day) {
+//      this.forecast = day.weather.description;
+//      this.time = new Date(day.valid_date).toString().slice(0, 15);
+//   }
 
-  function Trail(trail$$) {
-    this.name = trail$$.name;
-    this.location = trail$$.location ;
-    this.length = trail$$.length ;
-    this.stars = trail$$.stars ;
-    this.star$votes = trail$$.star_votes ;
-    this.summary = trail$$.summary ;
-    this.trail$url = trail$$.trail_url ;
-    this.conditions= trail$$.conditions;
-    this.conditions_date=trail$$.condition_date;
-    this.conditions_time=trail$$.condtion_time
-}
+//   function Trail(trail$$) {
+//     this.name = trail$$.name;
+//     this.location = trail$$.location ;
+//     this.length = trail$$.length ;
+//     this.stars = trail$$.stars ;
+//     this.star$votes = trail$$.star_votes ;
+//     this.summary = trail$$.summary ;
+//     this.trail$url = trail$$.trail_url ;
+//     this.conditions= trail$$.conditions;
+//     this.conditions_date=trail$$.condition_date;
+//     this.conditions_time=trail$$.condtion_time
+// }
 
  function errorHandler(error, request, response) {
    response.status(500).send(error);
@@ -206,40 +229,49 @@ client
 
 
 
-//________________________________
+//_________nvm_______________________
 
-client
-  .query(SQL, values)
-  .then((result) => {
-    if (result.rows.length > 0) {
-      response.status(200).json(result.rows[0]);
-    }else {
-        superagent(`https://eu1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${city}&format=json`
-        ).then((result) => {
-          const geoData = res.body;
-          const locationData = new Location(city, geoData);
-          const SQL = 'INSERT INTO location (search_query,formatted_query,latitude,longitude)VALUES($1,$2,$3,$4) RETURNING *';
-const values =[
-  locationData.search_query,
-  locationData.formatted_query,
-  locationData.latitude,
-  locationData.longitude,
-];
-client.query(SQL,values).then((result)=>{
-  console.log(result.rows);
+// client
+//   .query(SQL, values)
+//   .then((result) => {
+//     if (result.rows.length > 0) {
+//       response.status(200).json(result.rows[0]);
+//     }else {
+//         superagent(`https://eu1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${city}&format=json`
+//         ).then((result) => {
+//           const geoData = res.body;
+//           const locationData = new Location(city, geoData);
+//           const SQL = 'INSERT INTO location (search_query,formatted_query,latitude,longitude)VALUES($1,$2,$3,$4) RETURNING *';
+// const values =[
+//   locationData.search_query,
+//   locationData.formatted_query,
+//   locationData.latitude,
+//   locationData.longitude,
+// ];
+// client.query(SQL,values).then((result)=>{
+//   console.log(result.rows);
   
-  response.status(200).json(result.rows[0]);
-});
+//   response.status(200).json(result.rows[0]);
+// });
 
-        });
+//         });
 
-  //     }
+//    }
 
-  //   }
-  // }
-  // )
+  
 
 
+// app.use(errorHandler);
+// app.get('/location', (request, response) => {
+//   const city = request.query.city;
+//   const SQL = 'SELECT * FROM location WHERE search_query =$1';
+//   const values =[city];
+// client
+// .query(SQL,values)
+// .then((result)=>{
+//   response.status(200).json(result.rows);
+// })
+// .catch((err)=>errorHandler(err,request,response));
 
 
 
